@@ -134,3 +134,6 @@ dmypy.json
 
 # virtualenv files 
 devenv/
+
+# editor setting files
+.vscode/
