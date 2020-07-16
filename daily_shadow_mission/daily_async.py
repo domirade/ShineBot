@@ -3,7 +3,7 @@ import asyncio
 import datetime
 import json
 
-from i18n import JP, EN, ZH_TW, ZH_CN
+from .i18n import JP, EN, ZH_TW, ZH_CN
 
 URL = "https://mabi-api.sigkill.kr/get_todayshadowmission/{}?ndays={}"
 
