@@ -2,7 +2,6 @@ import config
 import logging
 import shinebot_token
 from discord.ext import commands
-
 from daily_shadow_mission import daily_async
 
 # standard logging stuff
@@ -31,12 +30,10 @@ async def heartbeat(ctx):
     await ctx.send(response)
         
 @bot.command(name='daily')
-async def DailyShadowMission(ctx, arg='en'):
-    pass
-    """ Check mabinogi.sigkill.kr/todaymission/ in provided language.
-    today_mission = await daily_async.daily(arg)
-    await ctx.send(today_mission)
-    """
+async def DailyShadowMission(ctx, *args):
+    """ args will be parsed in func `daily()` """
+    response = await daily_async.daily(*args)
+    await ctx.send(response)
 
 @bot.command()
 async def logout(ctx):

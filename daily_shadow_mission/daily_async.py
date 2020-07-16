@@ -16,25 +16,27 @@ async def fetch(session, url):
     async with session.get(url) as response:
         return await response.text()
 
-async def daily(date:str=today(), i18n="EN", days:int=1):
+async def daily(date:str=today(), i18n="EN", days:int=1, *args):
     async with aiohttp.ClientSession() as session:
         url = URL.format(date, days)
         response = json.loads(await fetch(session, url))
         taillteann = response[0]["Taillteann"]["normal"]["name"]
         tara = response[0]["Tara"]["normal"]["name"]
-        if i18n == "EN":
-            taillteann = EN[taillteann]
-            tara = EN[tara]
-        elif i18n == "JP":
+        if set("JP", "jp").intersection(set(args)):
             taillteann = JP[taillteann]
             tara = JP[tara]
-        elif i18n == "ZH_TW":
-            taillteann = ZH_TW[taillteann]
-            tara = ZH_TW[tara]
-        elif i18n == "ZH_CN":
+        elif set("KR", "kr").intersection(set(args)):
+            pass
+        elif set("ZH_CN", "zh_cn", "CN", "cn").intersection(set(args)):
             taillteann = ZH_CN[taillteann]
             tara = ZH_CN[tara]
-        return f"`Taillteann`: {taillteann}, `Tara`: {tara}"
+        elif set("ZH_TW", "zh_tw", "TW", "tw").intersection(set(args)):
+            taillteann = ZH_TW[taillteann]
+            tara = ZH_TW[tara]
+        else:
+            taillteann = EN[taillteann]
+            tara = EN[tara]
+        return f"**Taillteann**: {taillteann}, **Tara**: {tara}"
 
 async def main():
     result = await daily()
