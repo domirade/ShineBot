@@ -1,63 +1,59 @@
-import discord
 import config
 import logging
-import random
+import shinebot_token
+from discord.ext import commands
 
 from daily_shadow_mission import daily_async
 
+# standard logging stuff
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='shinebot.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-client = discord.Client()
+# initialize command prefix based on the mode
 
-@client.event
+prefix = '!'
+if config.mode != 'dev':
+    prefix = '%'
+
+bot = commands.Bot(command_prefix=commands.when_mentioned_or(prefix))
+
+# commands
+
+@bot.command(name='ping')
+async def heartbeat(ctx):
+    """ Check if the bot's alive """
+    response = 'PONG!\n'
+    if config.mode == 'dev':
+        response += str(bot.latency)
+    await ctx.send(response)
+        
+@bot.command(name='daily')
+async def DailyShadowMission(ctx, arg='en'):
+    pass
+    """ Check mabinogi.sigkill.kr/todaymission/ in provided language.
+    today_mission = await daily_async.daily(arg)
+    await ctx.send(today_mission)
+    """
+
+@bot.command()
+async def logout(ctx):
+    """ If this is dev, log out and exit """
+    if config.mode != 'dev':
+        return
+    await ctx.send('Logging out now...')
+    await bot.logout()
+    
+
+# finish initialization
+
+@bot.event
 async def on_ready():
-    print('Logged in as {0.user}'.format(client))
+    print('Logged in as {0.user}'.format(bot))
+    print('ShineBot version {0.version} build {0.build}'.format(config))
 
-@client.event
-async def on_message(message):
-    
-    # do not talk to yourself that's crazy
-    if message.author == client.user:
-        # print(message.author)
-        return
-    
-    # sass mentions, and be rude to Domi
-    if client.user.mention in message.mentions:
-        response = random.choice(['no u', 'bet', 'Neigh!'])
-        if message.author.id == 146191479746854913 and message.author.discriminator == '0413': # Domirade#0413
-            response = config.rude
-        await message.channel.send(message.author.mention + response)
-        return
-            
 
-    # babby's first test command
-    if message.content.startswith('%ping'):
-        await message.channel.send('PONG!')
-        return
 
-    # daily SM
-    if message.content.startswith('%daily'):
-        today_mission = await daily_async.daily()
-        await message.channel.send(today_mission)
-        return
-    
-    if message.content.startswith('%daily_jp'):
-        today_mission = await daily_async.daily(i18n="JP")
-        await message.channel.send(today_mission)
-        return
-
-    if message.content.startswith('%daily_kr'):
-        today_mission = await daily_async.daily(i18n="KR")
-        await message.channel.send(today_mission)
-        return
-
-    if message.content.startswith('%daily_cn'):
-        today_mission = await daily_async.daily(i18n="ZH_CN")
-        await message.channel.send(today_mission)
-        return
-
-client.run(config.token)
+bot.run(shinebot_token.token)
