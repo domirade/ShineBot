@@ -131,3 +131,9 @@ dmypy.json
 
 # Wing stuff
 *.wpu
+
+# virtualenv files 
+devenv/
+
+# editor setting files
+.vscode/
