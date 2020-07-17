@@ -4,11 +4,11 @@ import shinebot_token
 from discord.ext import commands, tasks
 from discord import File
 import discord
-from sqlite import insert_table, read_table
+from sqlite import insert_table, read_table, wipe_table
 import sqlite3
 import asyncio
-import aioschedule as schedule
 from datetime import datetime
+from daily_shadow_mission import daily_async
 
 # standard logging stuff
 logger = logging.getLogger('discord')
@@ -55,27 +55,6 @@ bot = commands.Bot(command_prefix=commands.when_mentioned_or(prefix))
 
 # commands
 
-async def weeklyIdeas():
-    await read_table()
-    await wipe_table()
-
-async def testTimer(n):
-    for i in range(n):
-        print("testing timer")
-
-
-##schedule.every().saturday.at("19:00").do(weeklyIdeas)
-##
-##schedule.every().day.at("14:00").do(testTimer,3)
-##schedule.every().day.at("14:03").do(testTimer,4)
-##schedule.every().day.at("14:04").do(testTimer,5)
-##schedule.every().day.at("14:05").do(testTimer,6)
-##schedule.every().day.at("14:06").do(testTimer,7)
-##
-##loop = asyncio.set_event_loop()
-##while True:
-##    loop.run_until_complete(schedule.run_pending())
-
 print(datetime.strftime(datetime.now(),'%H:%M'))
 print(datetime.today().weekday()) 
 
@@ -113,12 +92,10 @@ async def heartbeat(ctx):
     await ctx.send(response)
         
 @bot.command(name='daily')
-async def DailyShadowMission(ctx, arg='en'):
-    pass
-    """ Check mabinogi.sigkill.kr/todaymission/ in provided language.
-    today_mission = await daily_async.daily(arg)
-    await ctx.send(today_mission)
-    """
+async def DailyShadowMission(ctx, *args):
+    """ args will be parsed in func `daily()` """
+    response = await daily_async.daily(*args)
+    await ctx.send(response)
 
 @bot.command()
 async def logout(ctx):
@@ -165,24 +142,6 @@ async def sellout(ctx):
     await ctx.send('This message brought to you by Chili\'s, cause fuck Applebees')
 
 
-##@bot.command(name='idea')
-##async def ideaWrite(ctx, *args):
-##    with open('idealist.txt','a') as file:
-##        file.write(' '''.join(args) + '\n') #and no, file.close() is not needed
-##    await ctx.send('message recorded~')    
-##
-##    
-##@bot.command(name='print')
-##async def ideaPrint(ctx):
-##    await ctx.send('idealist',file=File('idealist.txt'))
-##    
-##@bot.command(name='wipe')
-##async def ideaWipe(ctx):
-##    open("idealist.txt", "w").close()
-##    await ctx.send('idea list deleted')
-
-
-
 @bot.command(name='idea')
 async def ideaCreate(ctx, *args):
     await insert_table(ctx.author.name, ' '''.join(args))
@@ -194,10 +153,6 @@ async def ideaRead(ctx):
     await read_table()
     print("print test")
 
-#@bot.command(name='')
-#async def (ctx):
-
-    
 # finish initialization
 
 @bot.event

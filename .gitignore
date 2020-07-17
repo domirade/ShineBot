@@ -131,5 +131,12 @@ dmypy.json
 
 # Wing stuff
 *.wpu
+
 idealist.txt
 idea.db
+
+# virtualenv files 
+devenv/
+
+# editor setting files
+.vscode/
