@@ -131,3 +131,5 @@ dmypy.json
 
 # Wing stuff
 *.wpu
+idealist.txt
+idea.db
