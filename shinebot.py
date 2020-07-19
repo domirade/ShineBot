@@ -3,18 +3,22 @@ import logging
 import random
 from discord.ext import commands
 from daily_shadow_mission import daily_async
-
-# from daily_shadow_mission import daily_async
+from discord.ext import commands
 import authtoken
-import weather
+import weather.forecast
 
 # standard logging stuff
+
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
 filename = 'shinebottest.log' if config.mode == 'dev' else 'shinebot.log'
 handler = logging.FileHandler(filename=filename, encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
+
+version = '0.2'
+build = '6'
+mode = config.mode
 
 # initialize command prefix based on the mode
 
@@ -31,7 +35,7 @@ async def heartbeat(ctx) -> str:
     "Hello? Are you still there?" """
     response = 'pong\n'
     if config.mode == 'dev':
-        response += 'Latency ' + str(bot.latency) + 'seconds\n'
+        response += f"Latency {math.trunc(bot.latency*1000)}ms"
         response += f'Called by {authtoken.tester}'
     await ctx.send(response)
         
@@ -42,7 +46,7 @@ async def DailyShadowMission(ctx, *args):
     await ctx.send(response)
 
 @bot.command(name='weather')
-async def GetDailyForecast(ctx, area:str='all', day:str='today', time=None, duration:int=2) -> str:
+async def GetForecast(ctx, area:str='all', day:str='today', time:str=None, duration:int=2) -> str:
     """ Gets a weather forecast from Mabinogi World Weather API.
     
     Usage: 
@@ -54,22 +58,18 @@ async def GetDailyForecast(ctx, area:str='all', day:str='today', time=None, dura
     %weather rano tomorrow
     %weather taillteann today 18:00 6
     
-    
-    If run with no arguments, defaults to a 2-hour overview of all regions.
+    If run with no arguments, defaults to a 2-hour forecast of all regions.
     
     Area can be the common name of a map or region, or the numeric regionID used by the game.
     It defaults to 'all' which also enforces a Duration limit of 2 hours to be polite.
     
     Day defaults to 'today' if unspecified which also means 'now' if written in the command.
-    It will otherwise only accept a YYYY-MM-DD date.
+    It can otherwise accept 'tomorrow' 'yesterday' and any YY-MM-DD format.
     
-    Time defaults to midnight (from the start of the day) but can be specified in 24:00 or
-    12:00pm (no spaces) notation. Keep in mind that this is in server time and I'm not willing
-    to add a timezone parameter there are already too many. ;)  If you enter a value outside of
-    the 20-minute segments used by the game, it'll be reduced to the nearest one.
+    Time defaults to midnight but can be specified in 16:00 or 4:00pm format
     
     Duration is the length of the forecast expressed in IRL hours (three 20-minute segments each)
-    It's limited to 36 hours for a single area and 2 hours for all of them.
+    It's limited to 24 hours for a single area and 2 hours for all of them.
     
     await ctx.send(await weather.forecast.get(area, day, time, duration))
     """
@@ -80,7 +80,7 @@ async def logout(ctx) -> None:
     """ If this is dev, log out and exit """
     if config.mode != 'dev':
         return
-    await ctx.send('Logging out now...')
+    await ctx.send('りょうかいしました')
     await bot.logout()
     bot.close()
     
@@ -105,9 +105,8 @@ async def rice(ctx):
 
 @bot.event
 async def on_ready():
-    print('Logged in as {0.user}'.format(bot))
-    print('ShineBot version {0.version}{0.mode} build {0.build}'.format(config))
-
+    print(f"Logged in as {bot.user}")
+    print(f"ShineBot Version {version}{mode}-{build}")
 
 
 bot.run(authtoken.token)
