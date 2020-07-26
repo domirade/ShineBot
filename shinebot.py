@@ -1,6 +1,8 @@
 import config
 import logging
 import shinebot_token
+import math
+import random
 from discord.ext import commands
 from daily_shadow_mission import daily_async
 
@@ -13,11 +15,10 @@ logger.addHandler(handler)
 
 # initialize command prefix based on the mode
 
-prefix = '!'
-if config.mode != 'dev':
-    prefix = '%'
+prefix = '!' if config.mode == 'dev' else '%'
 
-bot = commands.Bot(command_prefix=commands.when_mentioned_or(prefix))
+bot = commands.Bot(command_prefix=commands.when_mentioned_or(prefix),
+                   case_insensitive=True)
 
 # commands
 
@@ -43,6 +44,22 @@ async def logout(ctx):
     await ctx.send('Logging out now...')
     await bot.logout()
     
+@bot.command()
+async def rice(ctx):
+    """ bully people, I guess """
+    response = ctx.message.author.mention + ' '
+    _quips = ['8^y',
+              'How about that?',
+              'Huh.',
+              'Interesting...',
+              'LOL!',
+              'The More You Know:tm:',
+              '<:awesome:720802781488742410>']
+    if ctx.message.author.id == 192862829362020352:
+        response += 'You are: 101% Smelly! Oh god it\'s like a diaper filled with Indian food...'
+    else:
+        response += f'You are: {random.randint(0,100)}% Smelly! ' + random.choice(_quips)
+    await ctx.send(response)
 
 # finish initialization
 
