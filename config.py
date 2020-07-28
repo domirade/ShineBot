@@ -1,4 +1,8 @@
-version = '0.2'
-build = '0'
+# should be 'dev' for testing
 mode = 'dev'
-rude = """You're not my real dad!"""
+
+version = '0.2.22'
+
+# for dev mode, put your username here, in case of multiple test instances running at once
+tester = "Domirade#0413"
+testprefix = '!'
