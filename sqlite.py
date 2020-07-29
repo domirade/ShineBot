@@ -1,7 +1,6 @@
-#import sqlite3
-#from sqlite3 import Error
 import aiosqlite
 from aiosqlite import Error
+import discord
 
 
 async def insert_table(name, ideas):
@@ -10,7 +9,6 @@ async def insert_table(name, ideas):
         conn = await aiosqlite.connect('idea.db')
     except Error as e:
         print("unexppected error has occured while attempting to connect to the db: ", e)
-
     if conn is not None:
         try:
             await conn.execute("INSERT INTO IDEAS (ID, NAME, IDEA) VALUES (?, ?, ?)", (None, name, ideas))
@@ -32,12 +30,24 @@ async def read_table():
     if conn is not None:
         try:
             c = await conn.execute("""SELECT * FROM IDEAS""")
-            async for row in c: #temp printout until desired output format is debated
-                print("ID = ", row[0])
-                print("NAME = ", row[1])
-                print("IDEA = ", row[2], "\n")
-                print('forrowtest')
-            print('test')
+            longBoi = []
+            slicedList = []
+            longString = ''
+            async for row in c:
+                toAppend = map(str,row)
+                toAppend = ' '.join(toAppend)
+                summerLen = sum(len(i) for i in longBoi)
+                if((len(toAppend))+summerLen <= 1850):
+                    longBoi.append(''.join(toAppend))
+                else:
+                    longString = '\n'.join(longBoi)
+                    slicedList.append(longString)
+                    longBoi = []
+                    longBoi.append(''.join(toAppend))
+            remainderStr = '\n'.join(longBoi)
+            slicedList.append(remainderStr)#dump last row
+            return slicedList 
+ 
         except Error as e:
             print("error at read table: ", e)
     else:
