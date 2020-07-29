@@ -1,4 +1,4 @@
-version = '0.1'
-build = '3'
-mode = 'dev'
+version = '0.2'
+build = '0'
+mode = 'prod'
 rude = """You're not my real dad!"""
