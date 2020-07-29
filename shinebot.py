@@ -8,6 +8,8 @@ from sqlite import insert_table, read_table, wipe_table
 import sqlite3
 import asyncio
 from datetime import datetime
+import math
+import random
 from daily_shadow_mission import daily_async
 
 # standard logging stuff
@@ -47,11 +49,10 @@ create_table()
 
 # initialize command prefix based on the mode
 
-prefix = '!'
-if config.mode != 'dev':
-    prefix = '%'
+prefix = '!' if config.mode == 'dev' else '%'
 
-bot = commands.Bot(command_prefix=commands.when_mentioned_or(prefix))
+bot = commands.Bot(command_prefix=commands.when_mentioned_or(prefix),
+                   case_insensitive=True)
 
 # commands
 
@@ -162,6 +163,23 @@ async def ideaCreate(ctx, *args):
     else:
         await insert_table(ctx.author.name, ' '''.join(args))
         await ctx.send('Idea recorded')
+
+@bot.command()
+async def rice(ctx):
+    """ bully people, I guess """
+    response = ctx.message.author.mention + ' '
+    _quips = ['8^y',
+              'How about that?',
+              'Huh.',
+              'Interesting...',
+              'LOL!',
+              'The More You Know:tm:',
+              '<:awesome:720802781488742410>']
+    if ctx.message.author.id == 192862829362020352:
+        response += 'You are: 101% Smelly! Oh god it\'s like a diaper filled with Indian food...'
+    else:
+        response += f'You are: {random.randint(0,100)}% Smelly! ' + random.choice(_quips)
+    await ctx.send(response)
 
 # finish initialization
 
