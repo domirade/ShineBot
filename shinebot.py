@@ -115,5 +115,8 @@ async def on_ready():
                                      f"My version is {version}-{mode} and I was run by {config.tester}"
                                      ))
                            )
+    else:
+        channel = discord.utils.get(bot.get_all_channels(), guild__name='Shine', name='guild-general')
+        await channel.send(f"{bot.user} v{version}-{mode} initialized or reconnected.")
 
 bot.run(authtoken.token)
