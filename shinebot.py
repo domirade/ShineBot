@@ -1,12 +1,15 @@
-import config
 import logging
 import random
+import discord
+from enums import Guilds, Users, Roles, CosmeticRoles, Channels
 from discord.ext import commands
 from daily_shadow_mission import daily_async
-from discord.ext import commands
-import authtoken
+import math
 import weather.forecast
+import config
+from authtoken import token
 
+    
 # standard logging stuff
 
 logger = logging.getLogger('discord')
@@ -25,7 +28,9 @@ prefix = config.testprefix if config.mode == 'dev' else '%'
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(prefix),
                    case_insensitive=True)
 
-def to_lower (arg):
+# helper functions
+
+def to_lower (arg:str):
     return arg.lower()
 
 # commands
@@ -47,7 +52,7 @@ async def DailyShadowMission(ctx, *args):
     await ctx.send(response)
 
 @bot.command(name='weather')
-async def GetForecast(ctx, area: to_lower=None, date: to_lower=None, time: to_lower=None, duration: int=None) -> str:
+async def GetForecast(ctx, area: to_lower=None, date: to_lower=None, time: to_lower=None, duration: int=None):
     """ Gets a weather forecast from Mabinogi World Weather API.
     
     Usage: 
@@ -97,13 +102,45 @@ async def rice(ctx):
               'LOL!',
               'The More You Know:tm:',
               '<:awesome:720802781488742410>']
-    if ctx.message.author.id == 192862829362020352:
+    if ctx.message.author.id == Users.rice:
         response += 'You are: 101% Smelly! Oh god it\'s like a diaper filled with Indian food...'
     else:
         response += f'You are: {random.randint(0,100)}% Smelly! ' + random.choice(_quips)
     await ctx.send(response)
-
-# finish initialization
+    
+@bot.command(name='role')
+async def AssignCosmeticRoles(ctx, role: discord.Role):
+    if ctx.message.guild is None or ctx.message.guild != bot.get_guild(Guilds["Shine"]):
+        # This function for Shine guild only
+        return
+    
+    if bot.get_guild(Guilds["Shine"]).get_role(Roles["Member"]) not in ctx.message.author.roles:
+            await ctx.send(f"You must be a member to use this command!")
+            return
+        
+    pool = [bot.get_guild(Guilds["Shine"]).get_role(x) for x in CosmeticRoles.values()]
+    if role not in pool:
+        await ctx.send(f"This role isn't assignable. Acceptable roles in #welcome")
+        return
+    
+    if role not in ctx.message.author.roles:
+        await ctx.message.author.add_roles(role)
+        await ctx.send(f"Added role {role.name}")
+        return
+    else:
+        await ctx.message.author.remove_roles(role)
+        await ctx.send(f"Removed role {role.name}")
+        return   
+        
+@AssignCosmeticRoles.error
+async def roles_error(ctx, error):
+    if isinstance(error, commands.BadArgument):
+        await ctx.send(f"No role by that name was found.")
+    if isinstance(error, discord.Forbidden):
+        await ctx.send(f"Whoops! I don't have the permissions to do that.")
+        
+        
+        # finish initialization
 
 @bot.event
 async def on_ready():
@@ -119,4 +156,4 @@ async def on_ready():
         channel = discord.utils.get(bot.get_all_channels(), guild__name='Shine', name='guild-general')
         await channel.send(f"{bot.user} v{version}-{mode} initialized or reconnected.")
 
-bot.run(authtoken.token)
+bot.run(token)

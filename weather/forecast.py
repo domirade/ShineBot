@@ -1,36 +1,34 @@
 import asyncio
 import aiohttp
 import json
+import enum
 from datetime import *
 from dateutil.parser import parse
 
 _url = "http://mabi.world/api/forecast/"
 session = aiohttp.ClientSession()
-response = sessi
+response = None
 
-_emoji = {"unknown": "❓",
-         "sunny": "☀",
-         "cloudy": "☁",
-         "rain": "🌧️",
-         "thunder": "⛈"
-         }
+@enum.unique
+class Emoji(enum.Enum):
+   unknown = "❓"
+   sunny = "☀"
+   cloudy = "☁"
+   rainy = "🌧"
+   thunder = "⛈"
+   def get(i:int) -> str:
+      if i == -9:
+         return Emoji.unknown
+      elif i == -8:
+         return Emoji.sunny
+      elif i in range(-7,0):
+         return Emoji.cloudy
+      elif i in range(0,20):
+         return Emoji.rainy
+      elif i == 20:
+         return Emoji.thunder
 
 _offset = timezone(timedelta(hours=-4))
-
-def _EmojiForWeather(i:int) -> str:
-   if i == -9:
-      return _emoji["unknown"]
-   elif i == -8:
-      return _emoji["sunny"]
-   elif i in range(-7,0):
-      return _emoji["cloudy"]
-   elif i in range(0, 20):
-      return _emoji["rainy"]
-   elif i == 20: # range's second parameter is exclusive
-      return _emoji["thunder"]
-   else:
-      return "ERROR: Out-of-bounds value passed to _EmojiForWeather"
-      
 
 async def get(_area, _date, _time, _duration) -> str:
    # initialize defaults INSIDE function (or else)
@@ -84,10 +82,3 @@ async def get(_area, _date, _time, _duration) -> str:
       + f"_start: `{_start.isoformat()}`"
       
    return ret
-
-async def fetch(session, url):
-   async with session.get(url) as response:
-      return await response.text()
-   
-async def apiRequest()
-      
