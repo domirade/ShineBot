@@ -20,6 +20,7 @@ handler = logging.FileHandler(filename=filename, encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
+__version__ = version.version
 mode = config.mode
 
 # initialize command prefix based on the mode
@@ -163,15 +164,15 @@ async def roles_error(ctx, error):
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
-    print(f"ShineBot Version {version}-{mode}")
+    print(f"ShineBot Version {__version__}-{mode}")
     if config.mode == 'dev':
-        channel = discord.utils.get(bot.get_all_channels(), guild__name='Shine', name='shinebot-dev')
+        channel = bot.get_channel(Channels['Development'])
         await channel.send('\n'.join((f"{bot.user} reporting for testing!",
-                                     f"My version is {version}-{mode} and I was run by {config.tester}"
+                                     f"My version is {__version__}-{mode} and I was run by {config.tester}"
                                      ))
                            )
     else:
         channel = discord.utils.get(bot.get_all_channels(), guild__name='Shine', name='guild-general')
-        await channel.send(f"{bot.user} v{version}-{mode} initialized or reconnected.")
+        await channel.send(f"{bot.user} v{__version__}-{mode} initialized or reconnected.")
 
 bot.run(token)
