@@ -105,6 +105,7 @@ async def rice(ctx):
         response += f'You are: {random.randint(0,100)}% Smelly! ' + random.choice(_quips)
     await ctx.send(response)
 
+<<<<<<< HEAD
 @bot.command(name='timer')
 async def time1(ctx, name):
     now = datetime.now()
@@ -128,5 +129,20 @@ async def boss(ctx, name):
         if name == i:
             boss = j
     await ctx.send(boss)
+=======
+@bot.event
+async def on_ready():
+    print(f"Logged in as {bot.user}")
+    print(f"ShineBot Version {__version__}-{mode}")
+    channel = bot.get_channel(Channels['Development'])
+    if config.mode == 'dev':
+        await channel.send('\n'.join((f"{bot.user} reporting for testing!",
+                                     f"My version is {__version__}-{mode} and I was run by {config.tester}"
+                                     ))
+                           )
+    else:
+        # channel = discord.utils.get(bot.get_all_channels(), guild__name='Shine', name='guild-general')
+        await channel.send(f"{bot.user} v{__version__}-{mode} initialized or reconnected.")
+>>>>>>> bb71db12071b444f22b286479143868dd4583ea9
 
 bot.run(shinebot_token.token)
