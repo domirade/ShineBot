@@ -163,14 +163,14 @@ async def roles_error(ctx, error):
 async def on_ready():
     print(f"Logged in as {bot.user}")
     print(f"ShineBot Version {__version__}-{mode}")
+    channel = bot.get_channel(Channels['Development'])
     if config.mode == 'dev':
-        channel = bot.get_channel(Channels['Development'])
         await channel.send('\n'.join((f"{bot.user} reporting for testing!",
                                      f"My version is {__version__}-{mode} and I was run by {config.tester}"
                                      ))
                            )
     else:
-        channel = discord.utils.get(bot.get_all_channels(), guild__name='Shine', name='guild-general')
+        # channel = discord.utils.get(bot.get_all_channels(), guild__name='Shine', name='guild-general')
         await channel.send(f"{bot.user} v{__version__}-{mode} initialized or reconnected.")
 
 bot.run(token)
