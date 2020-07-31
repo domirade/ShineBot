@@ -1,8 +1,6 @@
-import config
 import logging
-import shinebot_token
-import math
 import random
+<<<<<<< HEAD
 import asyncio
 import discord
 from discord import message
@@ -11,22 +9,43 @@ from daily_shadow_mission import daily_async
 from datetime import datetime
 import timer
 
+=======
+import discord
+from enums import Guilds, Users, Roles, CosmeticRoles, Channels
+from discord.ext import commands
+from daily_shadow_mission import daily_async
+import math
+import weather.forecast
+import config
+import version
+from authtoken import token
+>>>>>>> f2d1a8189faf2103fdce1b2be1aa91b7423b6a77
 
+    
 # standard logging stuff
+
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename='shinebot.log', encoding='utf-8', mode='w')
+filename = 'shinebottest.log' if config.mode == 'dev' else 'shinebot.log'
+handler = logging.FileHandler(filename=filename, encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-# initialize command prefix based on the mode
+__version__ = version.version
+mode = config.mode
 
+<<<<<<< HEAD
 prefix = '!' 
     # if config.mode == 'dev' 
     # else '%'
+=======
+# initialize command prefix based on the mode
+>>>>>>> f2d1a8189faf2103fdce1b2be1aa91b7423b6a77
 
+prefix = config.testprefix if config.mode == 'dev' else '%'
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(prefix),
                    case_insensitive=True)
+<<<<<<< HEAD
 # commands
 
 @bot.command(name='ping')
@@ -35,6 +54,24 @@ async def heartbeat(ctx):
     response = 'PONG!\n'
     # if config.mode == 'dev':
         # response += str(bot.latency)
+=======
+
+# helper functions
+
+def to_lower (arg:str):
+    return arg.lower()
+
+# commands
+
+@bot.command(name='ping')    
+async def heartbeat(ctx) -> str:
+    """ Asks the bot for a response.
+    "Hello? Are you still there?" """
+    response = 'pong\n'
+    if config.mode == 'dev':
+        response += f"Latency {math.trunc(bot.latency*1000)}ms\n"
+        response += f'This instance run by {config.tester}'
+>>>>>>> f2d1a8189faf2103fdce1b2be1aa91b7423b6a77
     await ctx.send(response)
         
 @bot.command(name='daily')
@@ -43,13 +80,50 @@ async def DailyShadowMission(ctx, *args):
     response = await daily_async.daily(*args)
     await ctx.send(response)
 
+@bot.command(name='weather')
+async def GetForecast(ctx, area: to_lower=None, date: to_lower=None, time: to_lower=None, duration: int=None):
+    f""" (Not Implemented) Gets a weather forecast from Mabinogi World Weather API."""
+    """Usage: 
+    {prefix}weather *<area>*
+    {prefix}weather <area> *<day>* 
+    {prefix}weather <area> <day> *<duration>*
+    
+    Examples:
+    `%weather rano tomorrow`
+    `%weather taillteann today 18:00 6`
+    
+    If run with no arguments, defaults to a 2-hour forecast of all regions.
+    This is the same as running `%weather all now`
+    
+    Area can be the common name of a map or region, or the numeric regionID used by the game.
+    It defaults to 'all' which also enforces a Duration limit of 2 hours to be polite.
+    
+    Day defaults to 'today' if unspecified which also means 'now' if written in the command.
+    It can otherwise accept 'tomorrow' 'yesterday' and any YY-MM-DD format.
+    
+    Time defaults to the next third-of-an-hour in server time
+    
+    Duration is the length of the forecast expressed in IRL hours (three 20-minute segments each)
+    It's limited to 24 hours for a single area and 2 hours for all of them.
+    
+    await ctx.send(await weather.forecast.get(area, day, time, duration))
+    """
+    pass
+
 @bot.command()
-async def logout(ctx):
+async def logout(ctx) -> None:
     """ If this is dev, log out and exit """
+<<<<<<< HEAD
     # if config.mode != 'dev':
     #     return
     await ctx.send('Logging out now...')
+=======
+    if config.mode != 'dev':
+        return
+    await ctx.send('りょうかいしました')
+>>>>>>> f2d1a8189faf2103fdce1b2be1aa91b7423b6a77
     await bot.logout()
+    bot.close()
     
 @bot.command()
 async def rice(ctx):
@@ -62,11 +136,12 @@ async def rice(ctx):
               'LOL!',
               'The More You Know:tm:',
               '<:awesome:720802781488742410>']
-    if ctx.message.author.id == 192862829362020352:
+    if ctx.message.author.id == Users['rice']:
         response += 'You are: 101% Smelly! Oh god it\'s like a diaper filled with Indian food...'
     else:
         response += f'You are: {random.randint(0,100)}% Smelly! ' + random.choice(_quips)
     await ctx.send(response)
+<<<<<<< HEAD
 
 @bot.command(name='timer')
 async def time1(ctx, name):
@@ -95,3 +170,72 @@ async def on_ready():
     print('ShineBot version {0.version} build {0.build}'.format(config))
 
 bot.run(shinebot_token.token)
+=======
+    
+@bot.command(name='role')
+async def AssignCosmeticRoles(ctx, role: discord.Role):
+    f""" Usage: {prefix}role
+    
+    Available roles:
+    Basic, Intermediate, Advanced, Hardmode, Elite
+    Archer, Warrior, Mage, Alchemist
+    Shinecraft - for guild Minecraft server"""
+    try:
+            
+        if ctx.message.guild is None or ctx.message.guild != bot.get_guild(Guilds["Shine"]):
+            # This function for Shine guild only
+            return
+        
+        if bot.get_guild(Guilds["Shine"]).get_role(Roles["Member"]) not in ctx.message.author.roles:
+                await ctx.send(f"You must be a member to use this command!")
+                return
+            
+        pool = [bot.get_guild(Guilds["Shine"]).get_role(x) for x in CosmeticRoles.values()]
+        if role not in pool:
+            await ctx.send("This role isn't a valid Cosmetic Role. Acceptable roles:\n```" \
+                           + (', '.join([str(x) for x in CosmeticRoles])) + '```')
+            return
+        
+        if role not in ctx.message.author.roles:
+            await ctx.message.author.add_roles(role)
+            await ctx.send(f"Added role {role.name} {ctx.message.author.mention}")
+            return
+        else:
+            await ctx.message.author.remove_roles(role)
+            await ctx.send(f"Removed role {role.name} {ctx.message.author.mention}")
+            return   
+    except discord.Forbidden as ex:
+        await ctx.send(ex)
+        
+@AssignCosmeticRoles.error
+async def roles_error(ctx, error):
+    if isinstance(error, commands.BadArgument):
+        await ctx.send("No role by that name was found. Acceptable roles:\n```" \
+                       + (', '.join([str(x) for x in CosmeticRoles])) + '```')
+    elif isinstance(error, commands.MissingPermissions):
+        await ctx.send(f"Whoops! I don't have the permissions to do that.\n" + error)
+    elif isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send(f"Usage: {prefix}role <role>\nAcceptable roles:```" \
+                       + (', '.join([str(x) for x in CosmeticRoles])) + '```')
+    else:
+        await ctx.send(error)
+        
+        
+        # finish initialization
+
+@bot.event
+async def on_ready():
+    print(f"Logged in as {bot.user}")
+    print(f"ShineBot Version {__version__}-{mode}")
+    if config.mode == 'dev':
+        channel = bot.get_channel(Channels['Development'])
+        await channel.send('\n'.join((f"{bot.user} reporting for testing!",
+                                     f"My version is {__version__}-{mode} and I was run by {config.tester}"
+                                     ))
+                           )
+    else:
+        channel = discord.utils.get(bot.get_all_channels(), guild__name='Shine', name='guild-general')
+        await channel.send(f"{bot.user} v{__version__}-{mode} initialized or reconnected.")
+
+bot.run(token)
+>>>>>>> f2d1a8189faf2103fdce1b2be1aa91b7423b6a77
