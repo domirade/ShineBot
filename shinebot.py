@@ -108,10 +108,6 @@ async def rice(ctx):
 @bot.command(name='timer')
 async def time1(ctx, name):
     now = datetime.now()
-    # for i in range(len(bossname)):
-    #     if bossname[i] == name
-    #         y = bossname[i]
-    #     else
     current_time = now.strftime("%H:%M:%S") + " " + "Reminder in "+ str(name) + " hours"
     await ctx.send(current_time)
 
