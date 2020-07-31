@@ -5,7 +5,7 @@
 ##################################################################
 [project attributes]
 console.toolbox = [{'autosave': True,
-                    'cmd': 'bumpversion patch config.py',
+                    'cmd': 'bumpversion patch version.py',
                     'env': ('project',
                             [u'']),
                     'hostname': ('project',

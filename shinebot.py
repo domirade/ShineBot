@@ -7,6 +7,7 @@ from daily_shadow_mission import daily_async
 import math
 import weather.forecast
 import config
+import version
 from authtoken import token
 
     
@@ -19,7 +20,6 @@ handler = logging.FileHandler(filename=filename, encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-version = config.version
 mode = config.mode
 
 # initialize command prefix based on the mode
@@ -53,12 +53,12 @@ async def DailyShadowMission(ctx, *args):
 
 @bot.command(name='weather')
 async def GetForecast(ctx, area: to_lower=None, date: to_lower=None, time: to_lower=None, duration: int=None):
-    """ Gets a weather forecast from Mabinogi World Weather API.
+    f""" Gets a weather forecast from Mabinogi World Weather API.
     
     Usage: 
-    %weather *<area>*
-    %weather <area> *<day>* 
-    %weather <area> <day> *<duration>*
+    {prefix}weather *<area>*
+    {prefix}weather <area> *<day>* 
+    {prefix}weather <area> <day> *<duration>*
     
     Examples:
     `%weather rano tomorrow`
@@ -102,42 +102,60 @@ async def rice(ctx):
               'LOL!',
               'The More You Know:tm:',
               '<:awesome:720802781488742410>']
-    if ctx.message.author.id == Users.rice:
+    if ctx.message.author.id == Users['rice']:
         response += 'You are: 101% Smelly! Oh god it\'s like a diaper filled with Indian food...'
     else:
         response += f'You are: {random.randint(0,100)}% Smelly! ' + random.choice(_quips)
     await ctx.send(response)
     
 @bot.command(name='role')
+@commands.has_permissions(manage_roles=True)
 async def AssignCosmeticRoles(ctx, role: discord.Role):
-    if ctx.message.guild is None or ctx.message.guild != bot.get_guild(Guilds["Shine"]):
-        # This function for Shine guild only
-        return
+    f""" Usage: {prefix}role
     
-    if bot.get_guild(Guilds["Shine"]).get_role(Roles["Member"]) not in ctx.message.author.roles:
-            await ctx.send(f"You must be a member to use this command!")
+    Available roles:
+    Basic, Intermediate, Advanced, Hardmode, Elite
+    Archer, Warrior, Mage, Alchemist
+    Shinecraft - for guild Minecraft server"""
+    try:
+            
+        if ctx.message.guild is None or ctx.message.guild != bot.get_guild(Guilds["Shine"]):
+            # This function for Shine guild only
             return
         
-    pool = [bot.get_guild(Guilds["Shine"]).get_role(x) for x in CosmeticRoles.values()]
-    if role not in pool:
-        await ctx.send(f"This role isn't assignable. Acceptable roles in #welcome")
-        return
-    
-    if role not in ctx.message.author.roles:
-        await ctx.message.author.add_roles(role)
-        await ctx.send(f"Added role {role.name}")
-        return
-    else:
-        await ctx.message.author.remove_roles(role)
-        await ctx.send(f"Removed role {role.name}")
-        return   
+        if bot.get_guild(Guilds["Shine"]).get_role(Roles["Member"]) not in ctx.message.author.roles:
+                await ctx.send(f"You must be a member to use this command!")
+                return
+            
+        pool = [bot.get_guild(Guilds["Shine"]).get_role(x) for x in CosmeticRoles.values()]
+        if role not in pool:
+            await ctx.send("This role isn't a valid Cosmetic Role. Acceptable roles:\n```" \
+                           + (', '.join([str(x) for x in CosmeticRoles])) + '```')
+            return
+        
+        if role not in ctx.message.author.roles:
+            await ctx.message.author.add_roles(role)
+            await ctx.send(f"Added role {role.name} {ctx.message.author.mention}")
+            return
+        else:
+            await ctx.message.author.remove_roles(role)
+            await ctx.send(f"Removed role {role.name} {ctx.message.author.mention}")
+            return   
+    except discord.Forbidden:
+        await ctx.send(f"Whoops! I don't have the permissions to do that.") 
         
 @AssignCosmeticRoles.error
 async def roles_error(ctx, error):
     if isinstance(error, commands.BadArgument):
-        await ctx.send(f"No role by that name was found.")
-    if isinstance(error, discord.Forbidden):
+        await ctx.send("No role by that name was found. Acceptable roles:\n```" \
+                       + (', '.join([str(x) for x in CosmeticRoles])) + '```')
+    elif isinstance(error, commands.MissingPermissions):
         await ctx.send(f"Whoops! I don't have the permissions to do that.")
+    elif isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send(f"Usage: {prefix}role <role>\nAcceptable roles:```" \
+                       + (', '.join([str(x) for x in CosmeticRoles])) + '```')
+    else:
+        await ctx.send(error)
         
         
         # finish initialization
