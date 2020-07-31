@@ -3,7 +3,7 @@ import aiohttp
 import json
 import enum
 from datetime import *
-from dateutil.parser import parse
+# from dateutil.parser import parse
 
 _url = "http://mabi.world/api/forecast/"
 session = aiohttp.ClientSession()
