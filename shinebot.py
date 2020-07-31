@@ -110,7 +110,6 @@ async def rice(ctx):
     await ctx.send(response)
     
 @bot.command(name='role')
-@commands.has_permissions(manage_roles=True)
 async def AssignCosmeticRoles(ctx, role: discord.Role):
     f""" Usage: {prefix}role
     
