@@ -54,9 +54,8 @@ async def DailyShadowMission(ctx, *args):
 
 @bot.command(name='weather')
 async def GetForecast(ctx, area: to_lower=None, date: to_lower=None, time: to_lower=None, duration: int=None):
-    f""" Gets a weather forecast from Mabinogi World Weather API.
-    
-    Usage: 
+    f""" (Not Implemented) Gets a weather forecast from Mabinogi World Weather API."""
+    """Usage: 
     {prefix}weather *<area>*
     {prefix}weather <area> *<day>* 
     {prefix}weather <area> <day> *<duration>*
@@ -141,8 +140,8 @@ async def AssignCosmeticRoles(ctx, role: discord.Role):
             await ctx.message.author.remove_roles(role)
             await ctx.send(f"Removed role {role.name} {ctx.message.author.mention}")
             return   
-    except discord.Forbidden:
-        await ctx.send(f"Whoops! I don't have the permissions to do that.") 
+    except discord.Forbidden as ex:
+        await ctx.send(ex)
         
 @AssignCosmeticRoles.error
 async def roles_error(ctx, error):
@@ -150,7 +149,7 @@ async def roles_error(ctx, error):
         await ctx.send("No role by that name was found. Acceptable roles:\n```" \
                        + (', '.join([str(x) for x in CosmeticRoles])) + '```')
     elif isinstance(error, commands.MissingPermissions):
-        await ctx.send(f"Whoops! I don't have the permissions to do that.")
+        await ctx.send(f"Whoops! I don't have the permissions to do that.\n" + error)
     elif isinstance(error, commands.MissingRequiredArgument):
         await ctx.send(f"Usage: {prefix}role <role>\nAcceptable roles:```" \
                        + (', '.join([str(x) for x in CosmeticRoles])) + '```')
