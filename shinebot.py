@@ -62,9 +62,52 @@ async def DailyShadowMission(ctx, *date):
     response = await daily_async.daily(*date)
     await ctx.send(response)
 
+
+@bot.command(name='whenrain')
+async def GetNextRain(ctx, area: to_lower=None):
+    """ Gets the next rain (of any severity) for a given area.
+    
+    Usage:
+    whenrain <area>
+    
+    Examples:
+    whenrain
+    whenrain dunbarton
+    
+    Notes:
+    If run without a paremeter, will find the next rain _anywhere_
+    Remember: API doesn't discriminate between different degrees of rain strength.
+    If you're looking for the biggest bonus for non-Alchemy lifeskills, try whenthunder instead.
+    """
+    async with ctx.message.channel.typing():
+        params = await forecast.nextParams("rain", area)
+        response = await forecast.apiRequest(params)
+        await ctx.send(await forecast.parseUpcoming(response, area))
+    return
+
+@bot.command(name='whenthunder')
+async def GetNextThunder(ctx, area: to_lower=None):
+    """ Gets the next thunder for a given area. 
+    
+    Usage:
+    whenthunder <area>
+    
+    Examples:
+    whenthunder
+    whenthunder taillteann
+    
+    Notes:
+    If run without a parameter, will find the next thunder _anywhere_
+    """
+    async with ctx.message.channel.typing():
+        params = await forecast.nextParams("thunder", area)
+        response = await forecast.apiRequest(params)
+        await ctx.send(await forecast.parseUpcoming(response, area))
+    return
+
 @bot.command(name='weather')
 async def GetForecast(ctx, area: to_lower=None, date: to_lower=None, time: to_lower=None, duration: int=None):
-    """ (Not Implemented) Gets a weather forecast from Mabinogi World Weather API. 
+    """ Gets a weather forecast from Mabinogi World Weather API. 
     
     Usage: 
     weather <area>
@@ -81,16 +124,25 @@ async def GetForecast(ctx, area: to_lower=None, date: to_lower=None, time: to_lo
     Area can be the common name of a map or region, or the numeric regionID used by the game.
     It defaults to 'all' which also enforces a Duration limit of 2 hours to be polite.
     
-    Day defaults to 'today' if unspecified which also means 'now' if written in the command.
+    Day defaults to 'now' if unspecified.
     It can otherwise accept 'tomorrow' 'yesterday' and any YY-MM-DD format.
     
-    Time defaults to the next third-of-an-hour in server time
+    Time will be the current time, or midnight if date is not 'now'.
+    It will otherwise attempt to parse a 24-hour format hh:mm. 
     
     Duration is the length of the forecast expressed in IRL hours (three 20-minute segments each)
     It's limited to 24 hours for a single area and 2 hours for all of them.
     """
     async with ctx.message.channel.typing():
-        await ctx.send(await forecast.get(area, date, time, duration))
+        params = await forecast.forecastParams(area, date, time, duration)
+        response = await forecast.apiRequest(params)
+        await ctx.send(await forecast.parseForecast(response))
+    return
+
+@GetForecast.error
+async def forecast_error(ctx, error):
+    if isinstance(error, commands.BadArgument):
+        await ctx.send("Bad argument: double check the order of parameters.")
 
 @bot.command()
 async def logout(ctx) -> None:
