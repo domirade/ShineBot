@@ -3,12 +3,12 @@ import random
 import discord
 from enums import Guilds, Users, Roles, CosmeticRoles, Channels
 from discord.ext import commands
-from daily_shadow_mission import daily_async
 import math
-import weather.forecast
 import config
 import version
 from authtoken import token
+from daily_shadow_mission import daily_async
+from weather import forecast
 
     
 # standard logging stuff
@@ -39,7 +39,9 @@ def to_lower (arg:str):
 @bot.command(name='ping')    
 async def heartbeat(ctx) -> str:
     """ Asks the bot for a response.
-    "Hello? Are you still there?" """
+    
+    "Hello? Are you still there?" 
+    """
     response = 'pong\n'
     if config.mode == 'dev':
         response += f"Latency {math.trunc(bot.latency*1000)}ms\n"
@@ -47,22 +49,74 @@ async def heartbeat(ctx) -> str:
     await ctx.send(response)
         
 @bot.command(name='daily')
-async def DailyShadowMission(ctx, *args):
-    """ args will be parsed in func `daily()` """
-    response = await daily_async.daily(*args)
+async def DailyShadowMission(ctx, *date):
+    """ Gets the current Daily Shadow Missions.
+    
+    Usage:
+    daily
+    daily <YYYY-MM-DD>
+    
+    Example:
+    daily 2020-08-16
+    """
+    response = await daily_async.daily(*date)
     await ctx.send(response)
+
+
+@bot.command(name='whenrain')
+async def GetNextRain(ctx, area: to_lower=None):
+    """ Gets the next rain (of any severity) for a given area.
+    
+    Usage:
+    whenrain <area>
+    
+    Examples:
+    whenrain
+    whenrain dunbarton
+    
+    Notes:
+    If run without a paremeter, will find the next rain _anywhere_
+    Remember: API doesn't discriminate between different degrees of rain strength.
+    If you're looking for the biggest bonus for non-Alchemy lifeskills, try whenthunder instead.
+    """
+    async with ctx.message.channel.typing():
+        params = await forecast.nextParams("rain", area)
+        response = await forecast.apiRequest(params)
+        await ctx.send(await forecast.parseUpcoming(response, area))
+    return
+
+@bot.command(name='whenthunder')
+async def GetNextThunder(ctx, area: to_lower=None):
+    """ Gets the next thunder for a given area. 
+    
+    Usage:
+    whenthunder <area>
+    
+    Examples:
+    whenthunder
+    whenthunder taillteann
+    
+    Notes:
+    If run without a parameter, will find the next thunder _anywhere_
+    """
+    async with ctx.message.channel.typing():
+        params = await forecast.nextParams("thunder", area)
+        response = await forecast.apiRequest(params)
+        await ctx.send(await forecast.parseUpcoming(response, area))
+    return
 
 @bot.command(name='weather')
 async def GetForecast(ctx, area: to_lower=None, date: to_lower=None, time: to_lower=None, duration: int=None):
-    f""" (Not Implemented) Gets a weather forecast from Mabinogi World Weather API."""
-    """Usage: 
-    {prefix}weather *<area>*
-    {prefix}weather <area> *<day>* 
-    {prefix}weather <area> <day> *<duration>*
+    """ Gets a weather forecast from Mabinogi World Weather API. 
+    
+    Usage: 
+    weather <area>
+    weather <area> <day> <time>
+    weather <area> <day> <time> <duration>
     
     Examples:
-    `%weather rano tomorrow`
-    `%weather taillteann today 18:00 6`
+    weather rano tomorrow
+    weather taillteann today 18:00 6
     
     If run with no arguments, defaults to a 2-hour forecast of all regions.
     This is the same as running `%weather all now`
@@ -70,21 +124,29 @@ async def GetForecast(ctx, area: to_lower=None, date: to_lower=None, time: to_lo
     Area can be the common name of a map or region, or the numeric regionID used by the game.
     It defaults to 'all' which also enforces a Duration limit of 2 hours to be polite.
     
-    Day defaults to 'today' if unspecified which also means 'now' if written in the command.
+    Day defaults to 'now' if unspecified.
     It can otherwise accept 'tomorrow' 'yesterday' and any YY-MM-DD format.
     
-    Time defaults to the next third-of-an-hour in server time
+    Time will be the current time, or midnight if date is not 'now'.
+    It will otherwise attempt to parse a 24-hour format hh:mm. 
     
     Duration is the length of the forecast expressed in IRL hours (three 20-minute segments each)
     It's limited to 24 hours for a single area and 2 hours for all of them.
-    
-    await ctx.send(await weather.forecast.get(area, day, time, duration))
     """
-    pass
+    async with ctx.message.channel.typing():
+        params = await forecast.forecastParams(area, date, time, duration)
+        response = await forecast.apiRequest(params)
+        await ctx.send(await forecast.parseForecast(response))
+    return
+
+@GetForecast.error
+async def forecast_error(ctx, error):
+    if isinstance(error, commands.BadArgument):
+        await ctx.send("Bad argument: double check the order of parameters.")
 
 @bot.command()
 async def logout(ctx) -> None:
-    """ If this is dev, log out and exit """
+    """ Logs out the bot. Authorized users only. """
     if config.mode != 'dev':
         return
     await ctx.send('りょうかいしました')
@@ -110,12 +172,13 @@ async def rice(ctx):
     
 @bot.command(name='role')
 async def AssignCosmeticRoles(ctx, role: discord.Role):
-    f""" Usage: {prefix}role
+    """ Assign or remove a cosmetic role. 
     
     Available roles:
     Basic, Intermediate, Advanced, Hardmode, Elite
     Archer, Warrior, Mage, Alchemist
-    Shinecraft - for guild Minecraft server"""
+    Shinecraft - for guild Minecraft server
+    """
     try:
             
         if ctx.message.guild is None or ctx.message.guild != bot.get_guild(Guilds["Shine"]):
@@ -163,14 +226,13 @@ async def roles_error(ctx, error):
 async def on_ready():
     print(f"Logged in as {bot.user}")
     print(f"ShineBot Version {__version__}-{mode}")
+    channel = bot.get_channel(Channels['Development'])
     if config.mode == 'dev':
-        channel = bot.get_channel(Channels['Development'])
         await channel.send('\n'.join((f"{bot.user} reporting for testing!",
                                      f"My version is {__version__}-{mode} and I was run by {config.tester}"
                                      ))
                            )
     else:
-        channel = discord.utils.get(bot.get_all_channels(), guild__name='Shine', name='guild-general')
         await channel.send(f"{bot.user} v{__version__}-{mode} initialized or reconnected.")
 
 bot.run(token)
