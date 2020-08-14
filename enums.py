@@ -29,7 +29,8 @@ CosmeticRoles = {
     'Advanced' : 738507373571997696,
     'Hardmode' : 738507484641230989,
     'Elite' : 738507573468069959,
-    'Shinecraft' : 732421163703205960
+    'Shinecraft' : 732421163703205960,
+    'Winemaking' : 742591841492402216
     }
 
 Channels = {

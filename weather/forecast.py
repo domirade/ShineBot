@@ -9,6 +9,8 @@ import config
 
 _api = "http://mabi.world/api/forecast/"
 
+# the second element, or types[x][1], should be the 'descriptive' name
+
 types = {
 'type1':['1', 'Tir Chonaill / Dugald', 'tir', 'dugald'],
 'type2':['2', 'Dunbarton / Gairech', 'dunbarton', 'dunby', 'dunb', 'dun', 'gairech', 'fiodh', 'cobh'],
@@ -21,7 +23,7 @@ types = {
 'type9':['9', 'Courcle', 'courcle', 'cor', 'lappa', 'herba', 'cenae', 'erkey', 'irai', 'waterfall'],
 'type10':['10', 'Physis', 'physis', 'vales', 'zardine', 'calida', 'raspa', 'renes'],
 'type11':['11', 'Shadow Realm', 'shadow'],
-'type12':['12', 'Taillteann/Sliab Cuilin/Abb Neagh', 'taillteann', 'taill', 'tail', 'tara', 'corrib', 'blago', 'sliab', 'abb', 'neagh', 'abbneagh'],
+'type12':['12', 'Taillteann/Tara Region', 'taillteann', 'taill', 'tail', 'tara', 'corrib', 'blago', 'sliab', 'abb', 'neagh', 'abbneagh'],
 'type13':['13', 'Unknown/Unused']
 }
 
@@ -44,6 +46,9 @@ class Emoji(enum.Enum):
          return Emoji.rainy.value
       elif i == 20:
          return Emoji.thunder.value
+      
+def _thirdround(dt) :
+   return datetime(dt.year, dt.month, dt.day, dt.hour, 20 * (dt.minute // 20), 0, 0)
    
 async def apiRequest(params):
    """ Submit request with parameters and retrieve JSON object. """
@@ -77,16 +82,23 @@ async def forecastParams(_area, _date, _time, _duration) -> dict:
       _date = "now"
    if _duration is None:
       _duration = 2
+      
+   try:
+      if _date == "now" and _time.isdigit():
+         _duration = int(_time)
+   except:
+      pass
    
    _tz = tz.gettz('America/New_York')
    _start = None
    result = ''
    
    # limit duration where appropriate
-   if _duration > 24:
-      _duration = 24
-   elif not isinstance(_duration, int):
+   
+   if not isinstance(_duration, int):
       return f"Invalid argument: `{_duration}`, must be between 1 and 24"
+   elif _duration > 24:
+      _duration = 24
    
    if _area == "all" and _duration > 2:
       _duration = 2
@@ -95,7 +107,6 @@ async def forecastParams(_area, _date, _time, _duration) -> dict:
       _duration = 1
       
    # figure out the area we are filtering down to, if possible
-   # the second element, or types[x][1], should be the 'descriptive' name
    
    _of = None
    if _area == "now":
@@ -126,6 +137,7 @@ async def forecastParams(_area, _date, _time, _duration) -> dict:
               f"{sys.exc_info()[0]}\n" )
          
    # mash our time arg into the right format
+   
    try:
       if _start is None:            
          if _time is not None:
@@ -147,6 +159,7 @@ async def forecastParams(_area, _date, _time, _duration) -> dict:
       + f"_start: `{_start.isoformat()}` _tz: {_tz} \n")
    
    # add 3 hours to account for the API only returning results in Pacific time
+   
    _start += timedelta(hours=3)
    
    x = str(_start).rpartition('-')
@@ -166,23 +179,28 @@ async def forecastParams(_area, _date, _time, _duration) -> dict:
    
    
 async def parseForecast(response) -> str:
-   """ Format our JSON result. """
+   """ Format our JSON result into our output message. """
    
    result = ''
    if not response['from']:
       return f"Error! Invalid or unexpected response:\n{response}"
    
-   _from = datetime.fromisoformat(response['from'])
-   result += f"Result as of {_from.time()}:\n"
+   _from = _thirdround(datetime.fromisoformat(response['from']))
+   
+   result += f"Result as of {_from.time().isoformat(timespec='minutes')}:\n"
    
    if "forecast" in response:
       for key in response["forecast"]:
          if key.startswith('type'):
-            result += types[key][1] + ':\n'
+            t = _from
+            result += '**' + types[key][1] + '**:\n'
+            _list = []
             for i in response["forecast"][key]:
-               result += Emoji.get(i)
-            result += '\n'    
-            
+               _list.append(f"{t.time().isoformat(timespec='minutes')} : {Emoji.get(i)}")
+               t += timedelta(minutes=20)
+            result += ", ".join(_list)
+            result += '\n'
+                
    return result
 
 async def parseUpcoming(response, area) -> str:
@@ -193,7 +211,7 @@ async def parseUpcoming(response, area) -> str:
       return f"Error! Invalid or unexpected response:\n{response}"
    
    _from = datetime.fromisoformat(response['from'])
-   result += f"Result as of {_from.time()}:\n"   
+   result += f"Result as of {_from.time().isoformat(timespec='minutes')}:\n"   
    
    if "next" in response:
          weather = Emoji.get(response['next']['weather'])

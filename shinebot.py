@@ -31,13 +31,16 @@ bot = commands.Bot(command_prefix=commands.when_mentioned_or(prefix),
 
 # helper functions
 
-def to_lower (arg:str):
+def to_lower (arg:str) -> str:
     return arg.lower()
+
+def titlecase (arg:str) -> str:
+    return arg.title()
 
 # commands
 
 @bot.command(name='ping')    
-async def heartbeat(ctx) -> str:
+async def heartbeat(ctx):
     """ Asks the bot for a response.
     
     "Hello? Are you still there?" 
@@ -98,6 +101,7 @@ async def GetNextThunder(ctx, area: to_lower=None):
     
     Notes:
     If run without a parameter, will find the next thunder _anywhere_
+    
     """
     async with ctx.message.channel.typing():
         params = await forecast.nextParams("thunder", area)
@@ -111,8 +115,9 @@ async def GetForecast(ctx, area: to_lower=None, date: to_lower=None, time: to_lo
     
     Usage: 
     weather <area>
-    weather <area> <day> <time>
-    weather <area> <day> <time> <duration>
+    weather <area> <date> <time>
+    weather area now <duration>
+    weather <area> <date> <time> <duration>
     
     Examples:
     weather rano tomorrow
@@ -121,14 +126,14 @@ async def GetForecast(ctx, area: to_lower=None, date: to_lower=None, time: to_lo
     If run with no arguments, defaults to a 2-hour forecast of all regions.
     This is the same as running `%weather all now`
     
-    Area can be the common name of a map or region, or the numeric regionID used by the game.
-    It defaults to 'all' which also enforces a Duration limit of 2 hours to be polite.
+    Area defaults to "all" if omitted.
+    It accepts the numeric region IDs as well as most common names and nicknames for places.
     
-    Day defaults to 'now' if unspecified.
-    It can otherwise accept 'tomorrow' 'yesterday' and any YY-MM-DD format.
+    Date defaults to "now" if omitted.
+    It can otherwise accept 'tomorrow' 'yesterday' and any YYYY-MM-DD format.
     
-    Time will be the current time, or midnight if date is not 'now'.
-    It will otherwise attempt to parse a 24-hour format hh:mm. 
+    Time defaults to midnight if omitted.
+    It accepts a value in HH:MM format. If date is "now", you can specify duration as integer instead.
     
     Duration is the length of the forecast expressed in IRL hours (three 20-minute segments each)
     It's limited to 24 hours for a single area and 2 hours for all of them.
@@ -136,13 +141,16 @@ async def GetForecast(ctx, area: to_lower=None, date: to_lower=None, time: to_lo
     async with ctx.message.channel.typing():
         params = await forecast.forecastParams(area, date, time, duration)
         response = await forecast.apiRequest(params)
-        await ctx.send(await forecast.parseForecast(response))
+        response = await forecast.parseForecast(response)
+        await ctx.send(response)
     return
 
 @GetForecast.error
 async def forecast_error(ctx, error):
     if isinstance(error, commands.BadArgument):
         await ctx.send("Bad argument: double check the order of parameters.")
+    else:
+        print(error)
 
 @bot.command()
 async def logout(ctx) -> None:
@@ -171,16 +179,14 @@ async def rice(ctx):
     await ctx.send(response)
     
 @bot.command(name='role')
-async def AssignCosmeticRoles(ctx, role: discord.Role):
+async def AssignCosmeticRoles(ctx, role: titlecase):
     """ Assign or remove a cosmetic role. 
     
-    Available roles:
-    Basic, Intermediate, Advanced, Hardmode, Elite
-    Archer, Warrior, Mage, Alchemist
-    Shinecraft - for guild Minecraft server
+    Available roles: See #welcome
     """
     try:
-            
+        converter = commands.RoleConverter()
+        role = await converter.convert(ctx, str(CosmeticRoles[role]))
         if ctx.message.guild is None or ctx.message.guild != bot.get_guild(Guilds["Shine"]):
             # This function for Shine guild only
             return
