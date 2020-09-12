@@ -7,7 +7,7 @@ import math
 import config
 import version
 from authtoken import token
-from daily_shadow_mission import daily_async
+from daily_shadow_mission.daily_async import DailyMission
 from weather import forecast
 
     
@@ -37,6 +37,10 @@ def to_lower (arg:str) -> str:
 def titlecase (arg:str) -> str:
     return arg.title()
 
+# cogs
+
+bot.add_cog(DailyMission(bot))
+
 # commands
 
 @bot.command(name='ping')    
@@ -50,21 +54,6 @@ async def heartbeat(ctx):
         response += f"Latency {math.trunc(bot.latency*1000)}ms\n"
         response += f'This instance run by {config.tester}'
     await ctx.send(response)
-        
-@bot.command(name='daily')
-async def DailyShadowMission(ctx, *date):
-    """ Gets the current Daily Shadow Missions.
-    
-    Usage:
-    daily
-    daily <YYYY-MM-DD>
-    
-    Example:
-    daily 2020-08-16
-    """
-    response = await daily_async.daily(*date)
-    await ctx.send(response)
-
 
 @bot.command(name='whenrain')
 async def GetNextRain(ctx, area: to_lower=None):
