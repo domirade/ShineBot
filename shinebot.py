@@ -8,7 +8,7 @@ import config
 import version
 from authtoken import token
 from daily_shadow_mission.daily_async import DailyMission
-from weather import forecast
+from weather.forecast import Weather
 
     
 # standard logging stuff
@@ -31,8 +31,6 @@ bot = commands.Bot(command_prefix=commands.when_mentioned_or(prefix),
 
 # helper functions
 
-def to_lower (arg:str) -> str:
-    return arg.lower()
 
 def titlecase (arg:str) -> str:
     return arg.title()
@@ -40,6 +38,7 @@ def titlecase (arg:str) -> str:
 # cogs
 
 bot.add_cog(DailyMission(bot))
+bot.add_cog(Weather(bot))
 
 # commands
 
@@ -55,91 +54,6 @@ async def heartbeat(ctx):
         response += f'This instance run by {config.tester}'
     await ctx.send(response)
 
-@bot.command(name='whenrain')
-async def GetNextRain(ctx, area: to_lower=None):
-    """ Gets the next rain (of any severity) for a given area.
-    
-    Usage:
-    whenrain <area>
-    
-    Examples:
-    whenrain
-    whenrain dunbarton
-    
-    Notes:
-    If run without a paremeter, will find the next rain _anywhere_
-    Remember: API doesn't discriminate between different degrees of rain strength.
-    If you're looking for the biggest bonus for non-Alchemy lifeskills, try whenthunder instead.
-    """
-    async with ctx.message.channel.typing():
-        params = await forecast.nextParams("rain", area)
-        response = await forecast.apiRequest(params)
-        await ctx.send(await forecast.parseUpcoming(response, area))
-    return
-
-@bot.command(name='whenthunder')
-async def GetNextThunder(ctx, area: to_lower=None):
-    """ Gets the next thunder for a given area. 
-    
-    Usage:
-    whenthunder <area>
-    
-    Examples:
-    whenthunder
-    whenthunder taillteann
-    
-    Notes:
-    If run without a parameter, will find the next thunder _anywhere_
-    
-    """
-    async with ctx.message.channel.typing():
-        params = await forecast.nextParams("thunder", area)
-        response = await forecast.apiRequest(params)
-        await ctx.send(await forecast.parseUpcoming(response, area))
-    return
-
-@bot.command(name='weather')
-async def GetForecast(ctx, area: to_lower=None, date: to_lower=None, time: to_lower=None, duration: int=None):
-    """ Gets a weather forecast from Mabinogi World Weather API. 
-    
-    Usage: 
-    weather <area>
-    weather <area> <date> <time>
-    weather area now <duration>
-    weather <area> <date> <time> <duration>
-    
-    Examples:
-    weather rano tomorrow
-    weather taillteann today 18:00 6
-    
-    If run with no arguments, defaults to a 2-hour forecast of all regions.
-    This is the same as running `%weather all now`
-    
-    Area defaults to "all" if omitted.
-    It accepts the numeric region IDs as well as most common names and nicknames for places.
-    
-    Date defaults to "now" if omitted.
-    It can otherwise accept 'tomorrow' 'yesterday' and any YYYY-MM-DD format.
-    
-    Time defaults to midnight if omitted.
-    It accepts a value in HH:MM format. If date is "now", you can specify duration as integer instead.
-    
-    Duration is the length of the forecast expressed in IRL hours (three 20-minute segments each)
-    It's limited to 24 hours for a single area and 2 hours for all of them.
-    """
-    async with ctx.message.channel.typing():
-        params = await forecast.forecastParams(area, date, time, duration)
-        response = await forecast.apiRequest(params)
-        response = await forecast.parseForecast(response)
-        await ctx.send(response)
-    return
-
-@GetForecast.error
-async def forecast_error(ctx, error):
-    if isinstance(error, commands.BadArgument):
-        await ctx.send("Bad argument: double check the order of parameters.")
-    else:
-        print(error)
 
 @bot.command()
 async def logout(ctx) -> None:
