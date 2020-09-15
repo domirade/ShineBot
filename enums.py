@@ -38,6 +38,7 @@ Channels = {
     'General' : 637861464774017044, # guild-general
     'Market' : 639289350722551819, # wishlist-bazaar
     'Bosses': 737258991603679233, # field-bosses
+    'LFG': 637953663930859521, # events-lfg
     'QNA' : 637976439299506186,
     'Suggestions' : 637976383389433887,
     'MabiPro_Market' : 280895499383603211 
