@@ -1,5 +1,7 @@
 # hardcoded IDs? in MY bot? it's more likely than you think
 
+import enum
+
 Guilds = {
     'Shine': 637859341193445377,
     'MabiPro': 280414320595304448
@@ -43,3 +45,23 @@ Channels = {
     'Suggestions' : 637976383389433887,
     'MabiPro_Market' : 280895499383603211 
 }
+
+@enum.unique
+class Emoji(enum.Enum):
+    unknown = "❓"
+    sunny = "☀"
+    cloudy = "☁"
+    rainy = "🌧"
+    thunder = "🌩"
+    def get(i:int) -> str:
+        """ Gets the emoji corresponding to the integer argument. """
+        if i == -9:
+            return Emoji.unknown.value
+        elif i == -8:
+            return Emoji.sunny.value
+        elif i in range(-7,0):
+            return Emoji.cloudy.value
+        elif i in range(0,20):
+            return Emoji.rainy.value
+        elif i == 20:
+            return Emoji.thunder.value
