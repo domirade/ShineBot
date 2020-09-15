@@ -311,3 +311,4 @@ class Weather(commands.Cog):
                           + f"(At: {when.isoformat()} EST)")
                
       return result
+   
