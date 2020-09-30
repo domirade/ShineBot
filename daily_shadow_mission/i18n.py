@@ -32,7 +32,7 @@ EN = {
 				"도렌의 부탁": "Dorren's Request (1~3)",
 				"도발": "Provocation (3)",
 				"새도우 위자드 퇴치": "Defeat the Shadow Wizard (1~8)",
-				"정찰병 구출": "Rescue the Scout (1~4)",
+				"정찰병 구출": "Rescue the Scout (2~4)",
 				"제물": "Offering (1~4)",
 				"탈틴 방어전": "Taillteann Defensive Battle (3~6)",
 				"탈틴 점령전 I": "Battle for Taillteann I (1~4)",
