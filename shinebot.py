@@ -54,6 +54,10 @@ async def heartbeat(ctx):
         response += f'This instance run by {config.tester}'
     await ctx.send(response)
 
+@bot.command()
+async def version(ctx):
+    """ Prints the version number. """
+    await ctx.send(f"Version number: {__version__}-{mode}")
 
 @bot.command()
 async def logout(ctx) -> None:
@@ -82,14 +86,14 @@ async def rice(ctx):
     await ctx.send(response)
     
 @bot.command(name='role')
-async def AssignCosmeticRoles(ctx, role: titlecase):
+async def AssignCosmeticRoles(ctx, i: titlecase):
     """ Assign or remove a cosmetic role. 
     
     Available roles: See #welcome
     """
     try:
         converter = commands.RoleConverter()
-        role = await converter.convert(ctx, str(CosmeticRoles[role]))
+        role = await converter.convert(ctx, str(CosmeticRoles[i]))
         if ctx.message.guild is None or ctx.message.guild != bot.get_guild(Guilds["Shine"]):
             # This function for Shine guild only
             return
@@ -112,20 +116,18 @@ async def AssignCosmeticRoles(ctx, role: titlecase):
             await ctx.message.author.remove_roles(role)
             await ctx.send(f"Removed role {role.name} {ctx.message.author.mention}")
             return   
-    except discord.Forbidden as ex:
-        await ctx.send(ex)
+        
+    except (KeyError, commands.BadArgument):    
+        await ctx.send("No role by that name was found. Acceptable roles:\n```" \
+                       + (', '.join([str(x) for x in CosmeticRoles])) + '```')
+    except (commands.MissingPermissions, discord.errors.Forbidden):
+        await ctx.send(f"Whoops! I don't have the permissions to do that.\n")
+    except commands.MissingRequiredArgument:
+        await ctx.send(f"Usage: {prefix}role <role>\nAcceptable roles:```" \
+                       + (', '.join([str(x) for x in CosmeticRoles])) + '```')        
         
 @AssignCosmeticRoles.error
 async def roles_error(ctx, error):
-    if isinstance(error, commands.BadArgument):
-        await ctx.send("No role by that name was found. Acceptable roles:\n```" \
-                       + (', '.join([str(x) for x in CosmeticRoles])) + '```')
-    elif isinstance(error, commands.MissingPermissions):
-        await ctx.send(f"Whoops! I don't have the permissions to do that.\n" + error)
-    elif isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send(f"Usage: {prefix}role <role>\nAcceptable roles:```" \
-                       + (', '.join([str(x) for x in CosmeticRoles])) + '```')
-    else:
         await ctx.send(error)
         
         

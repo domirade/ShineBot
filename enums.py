@@ -32,18 +32,20 @@ CosmeticRoles = {
     'Hardmode' : 738507484641230989,
     'Elite' : 738507573468069959,
     'Shinecraft' : 732421163703205960,
-    'Winemaking' : 742591841492402216
+    'Winemaking' : 742591841492402216,
+    'Venting' : 760907349174386709
     }
 
 Channels = {
-    'Development' : 700852121150554133, # shinebot-dev
+    'Development' : 700852121150554133, # bot-spam
+    'Public-Info' : 760915117306150994, #information
     'General' : 637861464774017044, # guild-general
     'Market' : 639289350722551819, # wishlist-bazaar
     'Bosses': 737258991603679233, # field-bosses
     'LFG': 637953663930859521, # events-lfg
     'QNA' : 637976439299506186,
     'Suggestions' : 637976383389433887,
-    'MabiPro_Market' : 280895499383603211 
+    'MabiPro_Market' : 280895499383603211
 }
 
 @enum.unique
