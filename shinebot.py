@@ -96,35 +96,41 @@ async def AssignCosmeticRoles(ctx, i: titlecase):
         role = await converter.convert(ctx, str(CosmeticRoles[i]))
         if ctx.message.guild is None or ctx.message.guild != bot.get_guild(Guilds["Shine"]):
             # This function for Shine guild only
+            await ctx.message.author.send("This is available to Shine members only, sorry!")
             return
         
         if bot.get_guild(Guilds["Shine"]).get_role(Roles["Member"]) not in ctx.message.author.roles:
-                await ctx.send(f"You must be a member to use this command!")
+                await ctx.send(f"{ctx.message.author.mention} You must be a member to use this command!", delete_after=20.0)
+                await ctx.message.delete(delay=20.0)
                 return
             
         pool = [bot.get_guild(Guilds["Shine"]).get_role(x) for x in CosmeticRoles.values()]
         if role not in pool:
             await ctx.send("This role isn't a valid Cosmetic Role. Acceptable roles:\n```" \
-                           + (', '.join([str(x) for x in CosmeticRoles])) + '```')
+                           + (', '.join([str(x) for x in CosmeticRoles])) + '```', delete_after=60.0)
+            await ctx.message.delete(delay=60.0)
             return
+        
         
         if role not in ctx.message.author.roles:
             await ctx.message.author.add_roles(role)
-            await ctx.send(f"Added role {role.name} {ctx.message.author.mention}")
-            return
+            await ctx.send(f"Added role {role.name} {ctx.message.author.mention}", delete_after=10.0)
         else:
             await ctx.message.author.remove_roles(role)
-            await ctx.send(f"Removed role {role.name} {ctx.message.author.mention}")
-            return   
+            await ctx.send(f"Removed role {role.name} {ctx.message.author.mention}", delete_after=10.0)        
+        await ctx.message.delete(delay=10.0)
         
     except (KeyError, commands.BadArgument):    
         await ctx.send("No role by that name was found. Acceptable roles:\n```" \
-                       + (', '.join([str(x) for x in CosmeticRoles])) + '```')
+                       + (', '.join([str(x) for x in CosmeticRoles])) + '```', delete_after=60.0)
+        await ctx.message.delete(delay=60.0)
     except (commands.MissingPermissions, discord.errors.Forbidden):
-        await ctx.send(f"Whoops! I don't have the permissions to do that.\n")
+        await ctx.send(f"Whoops! I don't have the permissions to do that.\n", delete_after=10.0)
+        await ctx.message.delete(delay=10.0)
     except commands.MissingRequiredArgument:
         await ctx.send(f"Usage: {prefix}role <role>\nAcceptable roles:```" \
-                       + (', '.join([str(x) for x in CosmeticRoles])) + '```')        
+                       + (', '.join([str(x) for x in CosmeticRoles])) + '```', delete_after=60.0)
+        await ctx.message.delete(delay=60.0)
         
 @AssignCosmeticRoles.error
 async def roles_error(ctx, error):
