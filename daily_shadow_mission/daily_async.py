@@ -13,8 +13,9 @@ from enums import Channels
 class DailyMission(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.today = self.today_without_zero()
-        self.url = "https://mabi-api.sigkill.kr/get_todayshadowmission/{}?ndays={}"
+        self.today = self.server_time().date()
+        # self.url = "https://mabi-api.sigkill.kr/get_todayshadowmission/{}?ndays={}"
+        self.url = "https://mabi.world/sm/mww/{}/{}/{}.json"
         self.broadcast.start()
 
     @commands.command()
@@ -33,7 +34,7 @@ class DailyMission(commands.Cog):
 
     @tasks.loop(minutes=10)
     async def broadcast(self):
-        date = self.today_without_zero()
+        date = self.server_time().date()
         if date == self.today:
             pass
         else:
@@ -43,11 +44,11 @@ class DailyMission(commands.Cog):
             self.today = date
 
     @staticmethod
-    def today_without_zero() -> str:
+    def server_time() -> str:
         # 4 hours for the UTC-4 timezone, 7 hours for the daily mission refresh offset(7:00 AM)
         now = datetime.datetime.utcnow() - datetime.timedelta(hours=4) - \
             datetime.timedelta(hours=7)
-        return f"{now.year}-{now.month}-{now.day}"
+        return now
 
     @staticmethod
     async def fetch(session, url):
@@ -57,35 +58,37 @@ class DailyMission(commands.Cog):
     async def daily_mission(self, *args, days: int = 1) -> Embed:
         try:
             time_match_pattern = re.compile(r"^(\d{4})-(\d{1,2})-(\d{1,2})$")
-            date = self.today_without_zero()
+            server_time = self.server_time()
+            year, month, day = server_time.year, server_time.month, server_time.day
             # matching the date argument
             for this_arg in args:
                 match = time_match_pattern.match(this_arg)
                 if match:
-                    date = f"{match[1]}-{int(match[2])}-{int(match[3])}"
+                    # date = f"{match[1]}-{int(match[2])}-{int(match[3])}"
+                    year, month, day = match[1], match[2], match[3]
                     break
             # generate url
-            url = self.url.format(date, days)
+            url = self.url.format(year, month, day)
             # send request to daily SM API
             async with aiohttp.ClientSession() as session:
                 response = json.loads(await self.fetch(session, url))
-            taillteann = response[0]["Taillteann"]["normal"]["name"]
-            tara = response[0]["Tara"]["normal"]["name"]
+            taillteann = response["Taillteann"]["Normal"]
+            tara = response["Tara"]["Normal"]
             # matching the i18n argument
-            if {"JP", "jp"}.intersection(set(args)):
-                taillteann = JP[taillteann]
-                tara = JP[tara]
-            elif {"KR", "kr"}.intersection(set(args)):
-                pass
-            elif {"ZH_CN", "zh_cn", "CN", "cn"}.intersection(set(args)):
-                taillteann = ZH_CN[taillteann]
-                tara = ZH_CN[tara]
-            elif {"ZH_TW", "zh_tw", "TW", "tw"}.intersection(set(args)):
-                taillteann = ZH_TW[taillteann]
-                tara = ZH_TW[tara]
-            else:
-                taillteann = EN[taillteann]
-                tara = EN[tara]
+            # if {"JP", "jp"}.intersection(set(args)):
+            #     taillteann = JP[taillteann]
+            #     tara = JP[tara]
+            # elif {"KR", "kr"}.intersection(set(args)):
+            #     pass
+            # elif {"ZH_CN", "zh_cn", "CN", "cn"}.intersection(set(args)):
+            #     taillteann = ZH_CN[taillteann]
+            #     tara = ZH_CN[tara]
+            # elif {"ZH_TW", "zh_tw", "TW", "tw"}.intersection(set(args)):
+            #     taillteann = ZH_TW[taillteann]
+            #     tara = ZH_TW[tara]
+            # else:
+            #     taillteann = EN[taillteann]
+            #     tara = EN[tara]
         except json.decoder.JSONDecodeError:
             embed = Embed(
                 title="Error Occurred While Fetching Daily Shadow Missions",
@@ -108,7 +111,7 @@ class DailyMission(commands.Cog):
             return embed
         embed = Embed(
             title="Daily Shadow Missions",
-            description=f"Date: {date}",
+            description=f"Date: {year}-{month}-{day}",
             color=Color.gold()
         )
         embed.add_field(name="Taillteann", value=taillteann, inline=False)
