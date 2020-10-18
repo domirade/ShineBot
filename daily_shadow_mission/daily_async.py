@@ -86,6 +86,14 @@ class DailyMission(commands.Cog):
             else:
                 taillteann = EN[taillteann]
                 tara = EN[tara]
+        except json.decoder.JSONDecodeError:
+            embed = Embed(
+                title="Error Occurred While Fetching Daily Shadow Missions",
+                color=Color.red()
+            )
+            embed.add_field(name="Error message:",
+                            value="API is down or returned unexpected data", inline=False)
+            return embed
         except Exception:
             import traceback
             error_msg = traceback.format_exc()
