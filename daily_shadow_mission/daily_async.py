@@ -6,7 +6,7 @@ import re
 from discord import Embed, Color
 from discord.ext import commands, tasks
 
-from .i18n import JP, EN, ZH_TW, ZH_CN
+from .i18n import KR, JP, EN, ZH_TW, ZH_CN
 from enums import Channels
 
 
@@ -75,20 +75,21 @@ class DailyMission(commands.Cog):
             taillteann = response["Taillteann"]["Normal"]
             tara = response["Tara"]["Normal"]
             # matching the i18n argument
-            # if {"JP", "jp"}.intersection(set(args)):
-            #     taillteann = JP[taillteann]
-            #     tara = JP[tara]
-            # elif {"KR", "kr"}.intersection(set(args)):
-            #     pass
-            # elif {"ZH_CN", "zh_cn", "CN", "cn"}.intersection(set(args)):
-            #     taillteann = ZH_CN[taillteann]
-            #     tara = ZH_CN[tara]
-            # elif {"ZH_TW", "zh_tw", "TW", "tw"}.intersection(set(args)):
-            #     taillteann = ZH_TW[taillteann]
-            #     tara = ZH_TW[tara]
-            # else:
-            #     taillteann = EN[taillteann]
-            #     tara = EN[tara]
+            if {"JP", "jp"}.intersection(set(args)):
+                taillteann = JP[taillteann]
+                tara = JP[tara]
+            elif {"KR", "kr"}.intersection(set(args)):
+                taillteann = KR[taillteann]
+                tara = KR[tara]
+            elif {"ZH_CN", "zh_cn", "CN", "cn"}.intersection(set(args)):
+                taillteann = ZH_CN[taillteann]
+                tara = ZH_CN[tara]
+            elif {"ZH_TW", "zh_tw", "TW", "tw"}.intersection(set(args)):
+                taillteann = ZH_TW[taillteann]
+                tara = ZH_TW[tara]
+            else:
+                taillteann = EN[taillteann]
+                tara = EN[tara]
         except json.decoder.JSONDecodeError:
             embed = Embed(
                 title="Error Occurred While Fetching Daily Shadow Missions",
