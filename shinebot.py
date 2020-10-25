@@ -91,6 +91,7 @@ async def AssignCosmeticRoles(ctx, i: titlecase):
     
     Available roles: See #welcome
     """
+    # roles are defined in enums.py
     try:
         converter = commands.RoleConverter()
         role = await converter.convert(ctx, str(CosmeticRoles[i]))

@@ -33,7 +33,8 @@ CosmeticRoles = {
     'Elite' : 738507573468069959,
     'Shinecraft' : 732421163703205960,
     'Winemaking' : 742591841492402216,
-    'Venting' : 760907349174386709
+    'Venting' : 760907349174386709,
+    'Maplestory' : 770037023854690345
     }
 
 Channels = {
